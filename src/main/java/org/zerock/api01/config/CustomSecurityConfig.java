@@ -11,10 +11,13 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.zerock.api01.security.APIUserDetailService;
+import org.zerock.api01.security.filter.APILoginFilter;
 
 @Configuration
 @Log4j2
@@ -59,6 +62,13 @@ public class CustomSecurityConfig {
 
         //인증 매니저 등록
         http.authenticationManager(authenticationManager);
+
+        //ApiLoginFilter 설정
+        APILoginFilter apiLoginFilter = new APILoginFilter("/generateToken");
+        apiLoginFilter.setAuthenticationManager(authenticationManager);
+
+        //ApiLoginFilter의 위치 조정 UsernamePasswordAuthenticationFilter 이전에 동작해야하는 필터이기 때문
+        http.addFilterBefore(apiLoginFilter, UsernamePasswordAuthenticationFilter.class);
 
         // CSRF 토큰 비활성화
         http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
