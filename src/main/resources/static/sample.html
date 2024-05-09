@@ -9,6 +9,13 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
         //AJAX 호출
+        async function callTest() {
+            const response = await axios.get("http://localhost:8080/api/sample/doA");
+            return response.data
+        }
+        callTest()
+            .then(data => console.log(data))
+            .catch(e => console.log(e))
     </script>
 </body>
 </html>
