@@ -1,4 +1,4 @@
-package org.zerock.b01.config;
+package org.zerock.api01.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
