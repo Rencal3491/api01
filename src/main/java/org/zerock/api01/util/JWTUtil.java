@@ -30,12 +30,12 @@ public class JWTUtil {
         Map<String ,Object> payloads = new HashMap<>();
         payloads.putAll(valueMap);
         // token 생성 시간 설정
-        int time = (1) * days;
+        int time = (60*24) * days;
         String jwtStr = Jwts.builder()
                 .setHeader(headers)
                 .setClaims(payloads)
                 .setIssuedAt(Date.from(ZonedDateTime.now().toInstant()))
-                .setExpiration(Date.from(ZonedDateTime.now().plusMinutes(time).toInstant()))
+                .setExpiration(Date.from(ZonedDateTime.now().plusMinutes(days).toInstant()))
                 .signWith(SignatureAlgorithm.HS256, key.getBytes()).compact();
 
         return jwtStr;
@@ -44,8 +44,9 @@ public class JWTUtil {
     public Map<String , Object> validateToken(String token) throws JwtException {
         Map<String,Object> claim = null;
         claim = Jwts.parser()
-                .setSigningKey(key.) //set key
-                .parseClaimJws(token);
+                .setSigningKey(key.getBytes()).build() //set key
+                .parseSignedClaims(token)
+                .getBody();
         return claim;
 
     }
