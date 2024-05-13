@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="result">
+
+</div>
+<button class="btn1">Call server</button>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    const callServer = async () => {
+        console.log("call server 1");
+
+        const accessToken = localStorage.getItem("accessToken");
+        if(!accessToken) {
+            throw 'Cannot find Access Token';
+        }
+
+        // 수정된 헤더 이름
+        const authHeader = { "Authorization": `Bearer ${accessToken}` };
+        try {
+            // {headers:authHeader} 값을 통해서 header에 authHeader의 값을 추가
+            const res = await axios.get("http://localhost:8080/api/sample/doA", {headers: authHeader});
+
+            return res.data;
+        } catch (err) {
+            if (err.response.data.msg === 'Expired Token') {
+                console.log("Regresh Your Token")
+                // throw err.response.data.msg
+                // 이 경우에는 토큰 만료되어 다시 받아야 함
+                try {
+                    await callRefresh() //refreshToken 호출
+                    console.log("new tokens..saved...") //로그
+                    return callServer() //재호출
+                }catch (refreshErr) {
+                    // throw refreshErr.response.data.msg
+                    //refresh 토큰에 대한 예외 코드 확인
+                    if (refreshErr.response.data.msg === 'OLD_REFRESH') {
+                        console.log("OLD_REFRESH")
+                        throw refreshErr.response.data.msg
+                    } else if (refreshErr.response.data.msg === 'NO_ACCESS') {
+                        console.log("NO_ACCESS")
+                        throw refreshErr.response.data.msg
+                    } else {
+                        throw refreshErr.response.data.msg
+                    }
+                }
+            }
+        }
+    }
+
+    const callRefresh = async () => {
+        const accessToken = localStorage.getItem("accessToken")
+        const refreshToken = localStorage.getItem("refreshToken")
+
+        const tokens = {accessToken,refreshToken}
+        const res = await axios.post("http://localhost:8080/refreshToken", tokens)
+        //받아온 토큰을 저장
+        localStorage.setItem("accessToken",res.data.accessToken)
+        localStorage.setItem("refreshToken",res.data.refreshToken)
+
+    }
+
+    const resultDiv = document.querySelector(".result");
+    document.querySelector(".btn1").addEventListener("click", () => {
+        callServer().then(result => {
+            console.log(result);
+        }).catch(error => {
+            alert(error);
+        });
+    }, false);
+</script>
+</body>
+</html>
